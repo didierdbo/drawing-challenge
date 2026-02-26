@@ -97,16 +97,73 @@
       z-index: 1000;
       justify-content: center;
       align-items: center;
+      gap: 2rem;
+      padding: 2rem;
       cursor: zoom-out;
     }
 
     .lightbox.active { display: flex; }
 
     .lightbox img {
-      max-width: 90vw;
+      max-width: 60vw;
       max-height: 90vh;
       object-fit: contain;
       border: 1px solid #3d2e1a;
+      flex-shrink: 0;
+    }
+
+    .lightbox-info {
+      max-width: 320px;
+      cursor: default;
+    }
+
+    .lightbox-info h2 {
+      font-size: 1.1rem;
+      color: #c9a84c;
+      margin-bottom: 0.3rem;
+    }
+
+    .lightbox-info .lightbox-date {
+      font-size: 0.75rem;
+      color: #9a8a70;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .lightbox-info .lightbox-score {
+      display: inline-block;
+      background: #3d2e1a;
+      color: #c9a84c;
+      font-size: 0.85rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+      margin-bottom: 1.2rem;
+    }
+
+    .lightbox-info .lightbox-prompt {
+      font-size: 0.85rem;
+      color: #c8bca8;
+      line-height: 1.7;
+      border-left: 2px solid #3d2e1a;
+      padding-left: 0.8rem;
+      font-style: italic;
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 1rem;
+      right: 1.2rem;
+      font-size: 1.5rem;
+      color: #9a8a70;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    @media (max-width: 700px) {
+      .lightbox { flex-direction: column; overflow-y: auto; }
+      .lightbox img { max-width: 90vw; max-height: 60vh; }
+      .lightbox-info { max-width: 90vw; }
     }
 
     .card-body {
@@ -179,7 +236,14 @@
 </div>
 
 <div class="lightbox" id="lightbox">
+  <span class="lightbox-close" id="lightbox-close">&times;</span>
   <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-info" id="lightbox-info">
+    <h2 id="lightbox-title"></h2>
+    <div class="lightbox-date" id="lightbox-date"></div>
+    <span class="lightbox-score" id="lightbox-score"></span>
+    <div class="lightbox-prompt" id="lightbox-prompt"></div>
+  </div>
 </div>
 
 <footer>
@@ -189,7 +253,14 @@
 <script>
   // drawings.js sera généré automatiquement à chaque ajout
   const drawings = [
-    { date: "2026-02-26", title: "Corbeau bibliothécaire", file: "2026-02-26.jpg", score: 16, streak: 1 }
+    {
+      date: "2026-02-26",
+      title: "Corbeau bibliothécaire",
+      file: "2026-02-26.jpg",
+      score: 16,
+      streak: 1,
+      prompt: "Un corbeau perché sur une pile de trois vieux grimoires en équilibre instable. Il tient une plume d'oie dans le bec. Sur sa tête, un petit bonnet de clerc légèrement de travers. L'une de ses serres est posée sur un livre ouvert. Son œil — un seul visible — regarde directement le spectateur avec une expression de profond agacement d'être dérangé."
+    }
   ];
 
   if (drawings.length > 0) {
@@ -199,7 +270,7 @@
     drawings.forEach(d => {
       gallery.innerHTML += `
         <div class="card">
-          <img src="drawings/${d.file}" alt="${d.title}" loading="lazy" onclick="openLightbox('drawings/${d.file}')">
+          <img src="drawings/${d.file}" alt="${d.title}" loading="lazy" onclick="openLightbox(d)">
           <div class="card-body">
             <div class="card-date">${d.date}</div>
             <div class="card-title">${d.title}</div>
@@ -211,13 +282,22 @@
     const lb = document.getElementById('lightbox');
     const lbImg = document.getElementById('lightbox-img');
 
-    window.openLightbox = (src) => {
-      lbImg.src = src;
+    window.openLightbox = (d) => {
+      lbImg.src = `drawings/${d.file}`;
+      lbImg.alt = d.title;
+      document.getElementById('lightbox-title').textContent = d.title;
+      document.getElementById('lightbox-date').textContent = d.date;
+      document.getElementById('lightbox-score').textContent = `${d.score}/20`;
+      document.getElementById('lightbox-prompt').textContent = d.prompt;
       lb.classList.add('active');
     };
 
-    lb.addEventListener('click', () => lb.classList.remove('active'));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('active'); });
+    const closeLb = () => lb.classList.remove('active');
+    lb.addEventListener('click', closeLb);
+    document.getElementById('lightbox-close').addEventListener('click', closeLb);
+    document.getElementById('lightbox-info').addEventListener('click', e => e.stopPropagation());
+    lbImg.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
 
     const scores = drawings.map(d => d.score);
     document.getElementById('total').textContent = drawings.length;
