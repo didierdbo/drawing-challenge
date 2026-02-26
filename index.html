@@ -85,6 +85,28 @@
       object-fit: cover;
       display: block;
       background: #2d2218;
+      cursor: zoom-in;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+
+    .lightbox.active { display: flex; }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border: 1px solid #3d2e1a;
     }
 
     .card-body {
@@ -156,6 +178,10 @@
   <div class="empty">Les dessins apparaîtront ici au fil des sessions.</div>
 </div>
 
+<div class="lightbox" id="lightbox">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
 <footer>
   Didier Bonnet &mdash; <a href="https://github.com/didierdbo" style="color:#c9a84c;">GitHub</a>
 </footer>
@@ -173,7 +199,7 @@
     drawings.forEach(d => {
       gallery.innerHTML += `
         <div class="card">
-          <img src="drawings/${d.file}" alt="${d.title}" loading="lazy">
+          <img src="drawings/${d.file}" alt="${d.title}" loading="lazy" onclick="openLightbox('drawings/${d.file}')">
           <div class="card-body">
             <div class="card-date">${d.date}</div>
             <div class="card-title">${d.title}</div>
@@ -181,6 +207,17 @@
           </div>
         </div>`;
     });
+
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+
+    window.openLightbox = (src) => {
+      lbImg.src = src;
+      lb.classList.add('active');
+    };
+
+    lb.addEventListener('click', () => lb.classList.remove('active'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('active'); });
 
     const scores = drawings.map(d => d.score);
     document.getElementById('total').textContent = drawings.length;
