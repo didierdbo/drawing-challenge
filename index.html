@@ -267,10 +267,10 @@
     const gallery = document.getElementById('gallery');
     gallery.innerHTML = '';
 
-    drawings.forEach(d => {
+    drawings.forEach((d, i) => {
       gallery.innerHTML += `
         <div class="card">
-          <img src="drawings/${d.file}" alt="${d.title}" loading="lazy" onclick="openLightbox(d)">
+          <img src="drawings/${d.file}" alt="${d.title}" loading="lazy" onclick="openLightbox(${i})">
           <div class="card-body">
             <div class="card-date">${d.date}</div>
             <div class="card-title">${d.title}</div>
@@ -282,7 +282,8 @@
     const lb = document.getElementById('lightbox');
     const lbImg = document.getElementById('lightbox-img');
 
-    window.openLightbox = (d) => {
+    window.openLightbox = (i) => {
+      const d = drawings[i];
       lbImg.src = `drawings/${d.file}`;
       lbImg.alt = d.title;
       document.getElementById('lightbox-title').textContent = d.title;
